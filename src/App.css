@@ -1,0 +1,4 @@
+.active .link-button {
+  @apply !bg-secondary;
+  @apply !text-primary-foreground;
+}
