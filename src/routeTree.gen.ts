@@ -11,10 +11,26 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as PcImport } from './routes/pc'
+import { Route as DmImport } from './routes/dm'
 import { Route as AboutRouteImport } from './routes/about/route'
 import { Route as IndexImport } from './routes/index'
+import { Route as PcIndexImport } from './routes/pc/index'
+import { Route as DmIndexImport } from './routes/dm/index'
+import { Route as PcCharacterSheetImport } from './routes/pc/character-sheet'
+import { Route as DmBattleImport } from './routes/dm/battle'
 
 // Create/Update Routes
+
+const PcRoute = PcImport.update({
+  path: '/pc',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DmRoute = DmImport.update({
+  path: '/dm',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AboutRouteRoute = AboutRouteImport.update({
   path: '/about',
@@ -24,6 +40,26 @@ const AboutRouteRoute = AboutRouteImport.update({
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const PcIndexRoute = PcIndexImport.update({
+  path: '/',
+  getParentRoute: () => PcRoute,
+} as any)
+
+const DmIndexRoute = DmIndexImport.update({
+  path: '/',
+  getParentRoute: () => DmRoute,
+} as any)
+
+const PcCharacterSheetRoute = PcCharacterSheetImport.update({
+  path: '/character-sheet',
+  getParentRoute: () => PcRoute,
+} as any)
+
+const DmBattleRoute = DmBattleImport.update({
+  path: '/battle',
+  getParentRoute: () => DmRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -44,12 +80,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRoute
     }
+    '/dm': {
+      id: '/dm'
+      path: '/dm'
+      fullPath: '/dm'
+      preLoaderRoute: typeof DmImport
+      parentRoute: typeof rootRoute
+    }
+    '/pc': {
+      id: '/pc'
+      path: '/pc'
+      fullPath: '/pc'
+      preLoaderRoute: typeof PcImport
+      parentRoute: typeof rootRoute
+    }
+    '/dm/battle': {
+      id: '/dm/battle'
+      path: '/battle'
+      fullPath: '/dm/battle'
+      preLoaderRoute: typeof DmBattleImport
+      parentRoute: typeof DmImport
+    }
+    '/pc/character-sheet': {
+      id: '/pc/character-sheet'
+      path: '/character-sheet'
+      fullPath: '/pc/character-sheet'
+      preLoaderRoute: typeof PcCharacterSheetImport
+      parentRoute: typeof PcImport
+    }
+    '/dm/': {
+      id: '/dm/'
+      path: '/'
+      fullPath: '/dm/'
+      preLoaderRoute: typeof DmIndexImport
+      parentRoute: typeof DmImport
+    }
+    '/pc/': {
+      id: '/pc/'
+      path: '/'
+      fullPath: '/pc/'
+      preLoaderRoute: typeof PcIndexImport
+      parentRoute: typeof PcImport
+    }
   }
 }
 
 // Create and export the route tree
 
-export const routeTree = rootRoute.addChildren({ IndexRoute, AboutRouteRoute })
+export const routeTree = rootRoute.addChildren({
+  IndexRoute,
+  AboutRouteRoute,
+  DmRoute: DmRoute.addChildren({ DmBattleRoute, DmIndexRoute }),
+  PcRoute: PcRoute.addChildren({ PcCharacterSheetRoute, PcIndexRoute }),
+})
 
 /* prettier-ignore-end */
 
@@ -60,7 +143,9 @@ export const routeTree = rootRoute.addChildren({ IndexRoute, AboutRouteRoute })
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about"
+        "/about",
+        "/dm",
+        "/pc"
       ]
     },
     "/": {
@@ -68,6 +153,36 @@ export const routeTree = rootRoute.addChildren({ IndexRoute, AboutRouteRoute })
     },
     "/about": {
       "filePath": "about/route.tsx"
+    },
+    "/dm": {
+      "filePath": "dm.tsx",
+      "children": [
+        "/dm/battle",
+        "/dm/"
+      ]
+    },
+    "/pc": {
+      "filePath": "pc.tsx",
+      "children": [
+        "/pc/character-sheet",
+        "/pc/"
+      ]
+    },
+    "/dm/battle": {
+      "filePath": "dm/battle.tsx",
+      "parent": "/dm"
+    },
+    "/pc/character-sheet": {
+      "filePath": "pc/character-sheet.tsx",
+      "parent": "/pc"
+    },
+    "/dm/": {
+      "filePath": "dm/index.tsx",
+      "parent": "/dm"
+    },
+    "/pc/": {
+      "filePath": "pc/index.tsx",
+      "parent": "/pc"
     }
   }
 }
