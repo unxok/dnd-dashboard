@@ -19,6 +19,9 @@ import { Route as PcIndexImport } from './routes/pc/index'
 import { Route as DmIndexImport } from './routes/dm/index'
 import { Route as PcCharacterSheetImport } from './routes/pc/character-sheet'
 import { Route as DmBattleImport } from './routes/dm/battle'
+import { Route as AuthSignupImport } from './routes/auth/signup'
+import { Route as AuthProfileImport } from './routes/auth/profile'
+import { Route as AuthLoginImport } from './routes/auth/login'
 
 // Create/Update Routes
 
@@ -62,6 +65,21 @@ const DmBattleRoute = DmBattleImport.update({
   getParentRoute: () => DmRoute,
 } as any)
 
+const AuthSignupRoute = AuthSignupImport.update({
+  path: '/auth/signup',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthProfileRoute = AuthProfileImport.update({
+  path: '/auth/profile',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthLoginRoute = AuthLoginImport.update({
+  path: '/auth/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -92,6 +110,27 @@ declare module '@tanstack/react-router' {
       path: '/pc'
       fullPath: '/pc'
       preLoaderRoute: typeof PcImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/profile': {
+      id: '/auth/profile'
+      path: '/auth/profile'
+      fullPath: '/auth/profile'
+      preLoaderRoute: typeof AuthProfileImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupImport
       parentRoute: typeof rootRoute
     }
     '/dm/battle': {
@@ -132,6 +171,9 @@ export const routeTree = rootRoute.addChildren({
   AboutRouteRoute,
   DmRoute: DmRoute.addChildren({ DmBattleRoute, DmIndexRoute }),
   PcRoute: PcRoute.addChildren({ PcCharacterSheetRoute, PcIndexRoute }),
+  AuthLoginRoute,
+  AuthProfileRoute,
+  AuthSignupRoute,
 })
 
 /* prettier-ignore-end */
@@ -145,7 +187,10 @@ export const routeTree = rootRoute.addChildren({
         "/",
         "/about",
         "/dm",
-        "/pc"
+        "/pc",
+        "/auth/login",
+        "/auth/profile",
+        "/auth/signup"
       ]
     },
     "/": {
@@ -167,6 +212,15 @@ export const routeTree = rootRoute.addChildren({
         "/pc/character-sheet",
         "/pc/"
       ]
+    },
+    "/auth/login": {
+      "filePath": "auth/login.tsx"
+    },
+    "/auth/profile": {
+      "filePath": "auth/profile.tsx"
+    },
+    "/auth/signup": {
+      "filePath": "auth/signup.tsx"
     },
     "/dm/battle": {
       "filePath": "dm/battle.tsx",
