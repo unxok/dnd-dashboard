@@ -1,6 +1,7 @@
 import { SessionProvider, useSession } from "@/components/SessionProvider";
 import { Button, ButtonProps, buttonVariants } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import {
   Tooltip,
@@ -49,6 +50,7 @@ export const Route = createRootRoute({
             <Outlet />
           </div>
           {/* <TanStackRouterDevtools /> */}
+          <Toaster richColors position="top-right" />
         </div>
       </ThemeProvider>
     </SessionProvider>

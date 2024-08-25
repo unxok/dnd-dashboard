@@ -5,12 +5,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { Link, LinkProps } from "@tanstack/react-router";
 import { ReactNode } from "react";
 
-export const SidebarNav = (props: { children: ReactNode }) => {
+export const SidebarNav = (props: {
+  children: ReactNode;
+  className?: string;
+}) => {
   //
-  return <nav className="flex h-full flex-col gap-3 p-2">{props.children}</nav>;
+  return (
+    <nav className={cn("flex h-full flex-col gap-3 p-2", props.className)}>
+      {props.children}
+    </nav>
+  );
 };
 
 export const NavButton = ({
@@ -21,7 +29,7 @@ export const NavButton = ({
   return (
     <TooltipProvider>
       <Tooltip>
-        <Link {...props} className="group">
+        <Link {...props} className="group flex items-center justify-center">
           <TooltipTrigger asChild>
             <Button
               variant={"outline"}

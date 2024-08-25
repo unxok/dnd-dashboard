@@ -2,6 +2,7 @@ import { useSession } from "@/components/SessionProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { backdropBlur } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ReactNode, useEffect, useState } from "react";
@@ -34,7 +35,9 @@ export const Route = createFileRoute("/auth/login")({
 
     return (
       <div className="absolute inset-0 bg-[url(/tavern1.jpg)] bg-cover">
-        <div className="h-full w-full bg-background/80 p-5 backdrop-blur-[6px]">
+        <div
+          className={`h-full w-full bg-background/80 p-5 backdrop-blur-[${backdropBlur}]`}
+        >
           <div className="mx-auto my-0 flex h-full w-full max-w-[70ch] flex-col items-center justify-center border-border">
             <header className="">
               <h1 className="text-3xl font-bold tracking-wider">
@@ -75,7 +78,7 @@ export const Route = createFileRoute("/auth/login")({
                 <Input
                   id="email"
                   name="email"
-                  type="text"
+                  type="email"
                   placeholder="adventurer@tavernmail.com"
                   className=""
                   value={form.email}

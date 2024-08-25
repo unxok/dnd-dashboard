@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { backdropBlur } from "@/lib/constants";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/pc/character-sheet")({
@@ -15,17 +16,28 @@ export const Route = createFileRoute("/pc/character-sheet")({
 
 function CharacterSheet() {
   return (
-    <div className="flex-coll flex h-full w-full gap-2 bg-secondary/30 p-2">
-      <img src="" alt="" />
-      <div className="flex h-fit w-full gap-2">
-        <div className="flex w-1/2 flex-col">
-          <h1 className="h-full w-full font-mono text-xl font-bold tracking-wide">
-            Dungeons & Dragons
-          </h1>
+    <div className="h-full w-full bg-[url(/battle1.jpg)] bg-cover">
+      <div
+        className={`flex h-full w-full flex-col gap-2 bg-secondary/30 p-2 backdrop-blur-[${backdropBlur}]`}
+      >
+        <div className="flex h-fit w-full gap-2">
+          <div className="flex w-1/2 flex-col">
+            <h1 className="h-full w-full font-mono text-xl font-bold tracking-wide">
+              Dungeons & Dragons
+            </h1>
 
-          <CharacterName />
+            <CharacterName />
+          </div>
+          <BasicInfoContainer />
         </div>
-        <BasicInfoContainer />
+        <div className="flex h-full w-full">
+          <div className="flex w-1/3 gap-2">
+            <div className="flex flex-col gap-2">asdf</div>
+            <div className="flex flex-col gap-2">asdf</div>
+          </div>
+          <div className="flex w-1/3 flex-col gap-2">asdf</div>
+          <div className="flex w-1/3 flex-col gap-2">asdf</div>
+        </div>
       </div>
     </div>
   );
