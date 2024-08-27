@@ -14,6 +14,8 @@ import {
   Shapes,
   Drama,
   BookUser,
+  Users,
+  BookMarked,
 } from "lucide-react";
 import { createContext, ReactNode, useContext, useState } from "react";
 
@@ -75,9 +77,23 @@ const SidebarButtons = () => {
       <NavButton to="/about" tooltip="Quests">
         <ScrollText />
       </NavButton>
-      <NavButton to="/about" tooltip="Settings">
-        <Wrench />
-      </NavButton>
+
+      <div className="flex h-full flex-col justify-end gap-[inherit]">
+        <NavButton to="/about" tooltip="Settings">
+          <Wrench />
+        </NavButton>
+        <NavButton to="/about" tooltip="Switch character">
+          <Users />
+        </NavButton>
+        <NavButton to="/about" tooltip="Switch campaign">
+          <BookMarked />
+        </NavButton>
+        {/* The link popup in the browser bottom left corner typically will block the tooltip, so a spacer remdedies that */}
+        {/* Eventually should switch out with a collapse toogle */}
+        <NavButton ariaHidden disabled className="opacity-0" tooltip="spacer">
+          <BookMarked />
+        </NavButton>
+      </div>
     </>
   );
 };

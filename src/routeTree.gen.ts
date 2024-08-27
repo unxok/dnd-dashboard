@@ -17,8 +17,10 @@ import { Route as AboutRouteImport } from './routes/about/route'
 import { Route as IndexImport } from './routes/index'
 import { Route as PcIndexImport } from './routes/pc/index'
 import { Route as DmIndexImport } from './routes/dm/index'
+import { Route as CampaignsIndexImport } from './routes/campaigns/index'
 import { Route as PcCharacterSheetImport } from './routes/pc/character-sheet'
 import { Route as DmBattleImport } from './routes/dm/battle'
+import { Route as CampaignsCampaignIdImport } from './routes/campaigns/$campaignId'
 import { Route as AuthSignupImport } from './routes/auth/signup'
 import { Route as AuthProfileImport } from './routes/auth/profile'
 import { Route as AuthLoginImport } from './routes/auth/login'
@@ -55,6 +57,11 @@ const DmIndexRoute = DmIndexImport.update({
   getParentRoute: () => DmRoute,
 } as any)
 
+const CampaignsIndexRoute = CampaignsIndexImport.update({
+  path: '/campaigns/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const PcCharacterSheetRoute = PcCharacterSheetImport.update({
   path: '/character-sheet',
   getParentRoute: () => PcRoute,
@@ -63,6 +70,11 @@ const PcCharacterSheetRoute = PcCharacterSheetImport.update({
 const DmBattleRoute = DmBattleImport.update({
   path: '/battle',
   getParentRoute: () => DmRoute,
+} as any)
+
+const CampaignsCampaignIdRoute = CampaignsCampaignIdImport.update({
+  path: '/campaigns/$campaignId',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const AuthSignupRoute = AuthSignupImport.update({
@@ -133,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupImport
       parentRoute: typeof rootRoute
     }
+    '/campaigns/$campaignId': {
+      id: '/campaigns/$campaignId'
+      path: '/campaigns/$campaignId'
+      fullPath: '/campaigns/$campaignId'
+      preLoaderRoute: typeof CampaignsCampaignIdImport
+      parentRoute: typeof rootRoute
+    }
     '/dm/battle': {
       id: '/dm/battle'
       path: '/battle'
@@ -146,6 +165,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pc/character-sheet'
       preLoaderRoute: typeof PcCharacterSheetImport
       parentRoute: typeof PcImport
+    }
+    '/campaigns/': {
+      id: '/campaigns/'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof CampaignsIndexImport
+      parentRoute: typeof rootRoute
     }
     '/dm/': {
       id: '/dm/'
@@ -174,6 +200,8 @@ export const routeTree = rootRoute.addChildren({
   AuthLoginRoute,
   AuthProfileRoute,
   AuthSignupRoute,
+  CampaignsCampaignIdRoute,
+  CampaignsIndexRoute,
 })
 
 /* prettier-ignore-end */
@@ -190,7 +218,9 @@ export const routeTree = rootRoute.addChildren({
         "/pc",
         "/auth/login",
         "/auth/profile",
-        "/auth/signup"
+        "/auth/signup",
+        "/campaigns/$campaignId",
+        "/campaigns/"
       ]
     },
     "/": {
@@ -222,6 +252,9 @@ export const routeTree = rootRoute.addChildren({
     "/auth/signup": {
       "filePath": "auth/signup.tsx"
     },
+    "/campaigns/$campaignId": {
+      "filePath": "campaigns/$campaignId.tsx"
+    },
     "/dm/battle": {
       "filePath": "dm/battle.tsx",
       "parent": "/dm"
@@ -229,6 +262,9 @@ export const routeTree = rootRoute.addChildren({
     "/pc/character-sheet": {
       "filePath": "pc/character-sheet.tsx",
       "parent": "/pc"
+    },
+    "/campaigns/": {
+      "filePath": "campaigns/index.tsx"
     },
     "/dm/": {
       "filePath": "dm/index.tsx",

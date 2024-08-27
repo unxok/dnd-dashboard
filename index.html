@@ -7,7 +7,51 @@
     <title>Vite + React + TS</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="loading-screen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="100"
+          height="100"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-loader-circle"
+        >
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+        Your short rest will be over soon...
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    <style>
+      .loading-screen {
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+        left: 0px;
+        background-color: rgb(34, 34, 34);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        font-family: sans-serif;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .loading-screen > svg {
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </body>
 </html>

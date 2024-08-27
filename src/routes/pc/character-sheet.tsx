@@ -8,11 +8,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { backdropBlur } from "@/lib/constants";
+import { supabase } from "@/lib/supabase";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/pc/character-sheet")({
   component: CharacterSheet,
 });
+
+const getCharacterInfo = async () => {};
 
 function CharacterSheet() {
   return (

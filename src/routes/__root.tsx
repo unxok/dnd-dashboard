@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { SessionProvider, useSession } from "@/components/SessionProvider";
 import { Button, ButtonProps, buttonVariants } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ui/mode-toggle";
@@ -33,27 +34,31 @@ import {
   Sword,
   Wrench,
 } from "lucide-react";
-import { ReactNode } from "react";
+import { lazy, ReactNode, Suspense } from "react";
+
+const LazySessionProvider = lazy(() => import("@/components/SessionProvider"));
 
 export const Route = createRootRoute({
   component: () => (
-    <SessionProvider>
-      <ThemeProvider defaultTheme="system">
-        <div className="fixed inset-0 flex flex-col">
-          <Navbar />
-          <hr />
-          <div className="relative flex h-full w-full">
-            {/* <div className="flex h-full flex-col gap-3 p-2">
+    <ThemeProvider defaultTheme="system">
+      <Suspense fallback={<LoadingScreen />}>
+        <SessionProvider>
+          <div className="fixed inset-0 flex flex-col">
+            <Navbar />
+            <hr />
+            <div className="relative flex h-full w-full">
+              {/* <div className="flex h-full flex-col gap-3 p-2">
             <SidebarButtons />
             </div>
             <div className="h-full w-[1px] bg-muted"></div> */}
-            <Outlet />
+              <Outlet />
+            </div>
+            {/* <TanStackRouterDevtools /> */}
+            <Toaster richColors position="top-right" />
           </div>
-          {/* <TanStackRouterDevtools /> */}
-          <Toaster richColors position="top-right" />
-        </div>
-      </ThemeProvider>
-    </SessionProvider>
+        </SessionProvider>
+      </Suspense>
+    </ThemeProvider>
   ),
 });
 
@@ -62,32 +67,35 @@ const Navbar = () => {
   return (
     <div className="flex gap-2 p-2">
       <Link to="/">DnD Dashboard</Link>
+      <Link to="/campaigns">Campaigns</Link>
       <Link to="/dm">Dungeon master</Link>
       <Link to="/pc">Player</Link>
       <Link to="/about">About</Link>
       <div className="flex h-full w-full items-center justify-end gap-2">
         <ModeToggle />
-        {session ? (
-          <AvatarButton session={session} />
-        ) : (
-          <>
-            <Link to="/auth/signup">sign up</Link>
-            <Link to="/auth/login" variant={"default"}>
-              login
-            </Link>
-          </>
-        )}
+        <AvatarButton />
       </div>
     </div>
   );
 };
 
-const AvatarButton = ({ session }: { session: Session }) => {
-  //
+const AvatarButton = () => {
+  const { profile } = useSession();
   return (
-    <Link to="/auth/profile" variant={"ghost"}>
-      {session.user.email}
-    </Link>
+    <>
+      {profile ? (
+        <Link to="/auth/profile" variant={"ghost"}>
+          {profile?.username}
+        </Link>
+      ) : (
+        <>
+          <Link to="/auth/signup">sign up</Link>
+          <Link to="/auth/login" variant={"default"}>
+            login
+          </Link>
+        </>
+      )}
+    </>
   );
 };
 

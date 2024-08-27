@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button, ButtonProps } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -24,14 +24,27 @@ export const SidebarNav = (props: {
 export const NavButton = ({
   children,
   tooltip,
+  className,
+  ariaHidden,
   ...props
-}: LinkProps & { children: ReactNode; tooltip: ReactNode }) => {
+}: LinkProps & {
+  children: ReactNode;
+  tooltip: ReactNode;
+  className?: string;
+  // so I can use it as a spacer
+  ariaHidden?: boolean;
+}) => {
   return (
     <TooltipProvider>
       <Tooltip>
-        <Link {...props} className="group flex items-center justify-center">
+        <Link
+          {...props}
+          className={cn(`group flex items-center justify-center`, className)}
+        >
           <TooltipTrigger asChild>
             <Button
+              disabled={props.disabled}
+              aria-hidden={ariaHidden}
               variant={"outline"}
               className="p-2 text-muted-foreground group-data-[status=active]:bg-secondary group-data-[status=active]:text-primary"
             >
