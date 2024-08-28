@@ -19,17 +19,31 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { H2, H3, InlineCode, P } from "@/components/ui/typography";
-import { backdropBlur, CAMPAIGNS_QUERY_KEY } from "@/lib/constants";
+import {
+  backdropBlur,
+  CAMPAIGN_REQUESTS_QUERY_KEY,
+  CAMPAIGNS_QUERY_KEY,
+} from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Database } from "database.types";
-import { Pen, Pencil, Trash, Trash2 } from "lucide-react";
+import { Loader2, Pen, Pencil, Trash, Trash2 } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/components/SessionProvider";
+import {
+  getCampaignsDM,
+  getCampaignRequests,
+  Campaigns,
+  deleteCampaign,
+  updateCampaign,
+  createCampaign,
+  CampaignRequests,
+} from "@/lib/queries";
 
 export const Route = createFileRoute("/campaigns/")({
   component: () => <Component />,
@@ -37,32 +51,45 @@ export const Route = createFileRoute("/campaigns/")({
 
 type CampaignRow = Database["public"]["Tables"]["campaigns"]["Row"];
 
-const getCampaigns = async () => {
-  const { data, error } = await supabase
-    .from("campaigns")
-    .select(
-      "id, campaign_name, world, Owner:profiles (username), created_at, invite_code",
-    );
-  if (error || !data) {
-    console.error(error);
-    return undefined;
+const createCampaignRequest = async ({
+  pc_user_id,
+  campaign_invite_code,
+}: {
+  pc_user_id: string;
+  campaign_invite_code: string;
+}) => {
+  const { error } = await supabase
+    .from("campaign_requests")
+    .insert({ pc_user_id, campaign_invite_code });
+  if (error) {
+    toast.error("Failed to submit request :( Please try again later!");
+    return false;
   }
-  return data;
+  toast.success("Submitted request!");
+  return true;
 };
-
-type Campaigns = Awaited<ReturnType<typeof getCampaigns> | null>;
 
 const Component = () => {
   // const [campaigns, setCampaigns] = useState<Campaigns>(null);
 
   const {
     data: campaigns,
-    error,
-    isLoading,
+    error: campaignsError,
+    isLoading: campaignsLoading,
   } = useQuery({
     queryKey: [CAMPAIGNS_QUERY_KEY],
     queryFn: async () => {
-      return await getCampaigns();
+      return await getCampaignsDM();
+    },
+  });
+  const {
+    data: requests,
+    error: requestsError,
+    isLoading: requestsLoading,
+  } = useQuery({
+    queryKey: [CAMPAIGN_REQUESTS_QUERY_KEY],
+    queryFn: async () => {
+      return await getCampaignRequests();
     },
   });
 
@@ -86,9 +113,27 @@ const Component = () => {
           </P>
           <br />
           <H3>Where you're DM</H3>
-          <CampaignsTable keyPrefix="owned-campaigns" campaigns={campaigns} />
+          {campaignsLoading ? (
+            <Loader2 size={50} className="animate-spin" />
+          ) : (
+            <CampaignsTable keyPrefix="owned-campaigns" campaigns={campaigns} />
+          )}
           <div className="flex w-full justify-end">
             <CampaignDialogButton isEdit={false} />
+          </div>
+          <br />
+          <H3>Requests</H3>
+          <P>Requests you've sent as a player to join a campaign.</P>
+          {requestsLoading ? (
+            <Loader2 size={50} className="animate-spin" />
+          ) : (
+            <CampaignRequestsTable
+              keyPrefix="campaign-requests"
+              requests={requests}
+            />
+          )}
+          <div className="flex w-full justify-end">
+            <RequestsDialogButton />
           </div>
         </div>
       </div>
@@ -204,14 +249,6 @@ const CampaignsTable = ({
   );
 };
 
-const deleteCampaign = async (id: number) => {
-  const { error } = await supabase.from("campaigns").delete().eq("id", id);
-  if (error) {
-    return toast.error("Failed to delete :( Please try again!");
-  }
-  return toast.success("Campaign deleted successfully!");
-};
-
 const CampaignDelete = ({
   id,
   campaign_name,
@@ -280,48 +317,9 @@ const CampaignDelete = ({
   );
 };
 
-type CampaignDialogForm = {
+export type CampaignDialogForm = {
   campaign_name: string;
   world: string;
-};
-
-const createCampaign = async ({
-  id: _, // have to have same params as updateCampaign since we are dynamically setting the mutationFn
-  form,
-}: {
-  id: number;
-  form: CampaignDialogForm;
-}) => {
-  const { campaign_name, world } = form;
-  const { error } = await supabase.from("campaigns").insert({
-    campaign_name,
-    world,
-  });
-  if (error) {
-    return toast.error("Something went wrong :( Please try again!");
-  }
-  return toast.success("Campaign created!");
-};
-
-const updateCampaign = async ({
-  id,
-  form,
-}: {
-  id: number;
-  form: CampaignDialogForm;
-}) => {
-  const { campaign_name, world } = form;
-  const { error } = await supabase
-    .from("campaigns")
-    .update({
-      campaign_name,
-      world,
-    })
-    .eq("id", id);
-  if (error) {
-    return toast.error("Something went wrong :( Please try again!");
-  }
-  return toast.success("Campaign updated!");
 };
 
 type CampaignDialogProps = (
@@ -443,5 +441,125 @@ const CampaignDialogButton = (props: CampaignDialogProps) => {
         </form>
       </DialogContent>
     </Dialog>
+  );
+};
+
+const RequestsDialogButton = () => {
+  const [inviteCode, setInviteCode] = useState("");
+  const { session } = useSession();
+
+  if (!session) return;
+
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationKey: ["create-campaign"],
+    mutationFn: createCampaignRequest,
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: [CAMPAIGN_REQUESTS_QUERY_KEY],
+      });
+    },
+  });
+
+  const onClose = () => {
+    setInviteCode("");
+  };
+
+  return (
+    <Dialog
+      onOpenChange={(b) => {
+        if (b) return;
+        onClose();
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button>submit request</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutation.mutate({
+              pc_user_id: session.user.id,
+              campaign_invite_code: inviteCode,
+            });
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Submit campaign join request</DialogTitle>
+            <DialogDescription>
+              Requests are reviewed by the DM of the campaign.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex w-full flex-col gap-4 py-3">
+            <div>
+              <Label htmlFor="invite-code">Invite code</Label>
+              <Input
+                required
+                id="invite-code"
+                name="invite-code"
+                type="text"
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose className={buttonVariants({ variant: "ghost" })}>
+              cancel
+            </DialogClose>
+            <DialogClose
+              type="submit"
+              className={buttonVariants({ variant: "default" })}
+            >
+              submit
+            </DialogClose>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const CampaignRequestsTable = ({
+  keyPrefix,
+  requests,
+}: {
+  keyPrefix: string;
+  requests: CampaignRequests;
+}) => {
+  if (!requests || !requests.length) {
+    return <em className="text-muted-foreground">no campaign requests</em>;
+  }
+
+  const headers = Object.keys(requests[0]);
+
+  return (
+    <div className="py-3">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {headers.map((h, i) => (
+              <TableHead key={keyPrefix + h + i + "header-cell"}>
+                {headerHelper(h)}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {requests.map((c, ci) => (
+            <TableRow key={keyPrefix + ci + "table-row"}>
+              {Object.entries(c).map(([key, value], di) => (
+                <TableCell key={keyPrefix + key + di}>
+                  {dataHelper(c.id, headers[di], value)}
+                </TableCell>
+              ))}
+              <TableCell>alsdkfj</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };

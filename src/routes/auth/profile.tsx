@@ -19,9 +19,19 @@ import { Session } from "@supabase/supabase-js";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Database } from "database.types";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
-import { Check, Cross, Loader, Loader2, Pencil, X } from "lucide-react";
+import {
+  Check,
+  CheckCircle,
+  CheckCircle2,
+  Cross,
+  Loader,
+  Loader2,
+  Pencil,
+  X,
+  XCircle,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { backdropBlur } from "@/lib/constants";
 
@@ -37,36 +47,18 @@ export const Route = createFileRoute("/auth/profile")({
 });
 
 const Component = () => {
-  const { session } = useSession();
+  const { session, profile } = useSession();
   const nav = useNavigate({ from: "/auth/profile" });
   type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-  const [profileDetails, setProfileDetails] = useState<{
-    email: string;
-    username: Profile["username"];
-  }>({
-    username: null,
-    email: session?.user?.email ?? "",
-  });
 
   useEffect(() => {
     if (!session) {
       nav({ to: "/auth/login" });
       return;
     }
+  });
 
-    (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", session.user.id);
-      // TODO handle better
-      if (!data) return;
-      const { username } = data[0];
-      setProfileDetails((prev) => ({ ...prev, username }));
-    })();
-  }, [session]);
-
-  if (!session) return;
+  if (!session || !profile) return;
 
   return (
     <div className="absolute inset-0 bg-[url(/tavern2.jpg)] bg-cover">
@@ -79,8 +71,10 @@ const Component = () => {
             <p className="text-muted-foreground"></p>
           </header>
           <br />
+
           <Email session={session} />
           <Password session={session} />
+          <Username session={session} username={profile.username} />
           <br />
           <Button className="w-full" onClick={() => supabase.auth.signOut()}>
             logout
@@ -337,6 +331,128 @@ const Password = ({ session }: { session: Session }) => {
                 onClick={() => {
                   setEditing(false);
                   setValue("");
+                }}
+              >
+                <X />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+const validateUsername = async (username: string) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("username", username);
+  // username not available
+  if (data?.length) return false;
+  if (error) {
+    toast.error(
+      "Something went wrong during username validation :( Please try again later!",
+    );
+    return false;
+  }
+  // username *is* available
+  return true;
+};
+
+const Username = ({
+  username,
+  session,
+}: {
+  username: string;
+  session: Session;
+}) => {
+  const [isEditing, setEditing] = useState(false);
+  const [value, setValue] = useState(username);
+  const [isAvailable, setAvailable] = useState(true);
+
+  const updateUsername = async () => {
+    if (!isAvailable) return;
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ username: value })
+      .eq("id", session.user.id);
+    if (error) {
+      toast.error(
+        "Something went wrong when updating username :( Please try again later!",
+      );
+      return;
+    }
+    toast.success("Updated username!");
+    await supabase.auth.refreshSession();
+  };
+
+  const { isPending: isLoading, mutate } = useMutation({
+    mutationKey: ["username-validate"],
+    mutationFn: async (un: string) =>
+      setAvailable(username === un ? true : await validateUsername(un)),
+  });
+
+  return (
+    <>
+      <div className="w-full">
+        <Label htmlFor="username">Username</Label>
+
+        <div className="flex">
+          <Input
+            id="username"
+            name="username"
+            type="username"
+            className=""
+            value={value}
+            disabled={!isEditing}
+            onChange={(e) => {
+              setValue(e.target.value);
+              mutate(e.target.value);
+            }}
+          />
+          {!isEditing && (
+            <Button
+              variant={"ghost"}
+              className=""
+              onClick={() => setEditing(true)}
+            >
+              {isLoading ? <Loader2 className="animate-spin" /> : <Pencil />}
+            </Button>
+          )}
+        </div>
+
+        {isEditing && (
+          <div>
+            <div className="flex gap-1 p-2">
+              available{" "}
+              {isLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : isAvailable ? (
+                <CheckCircle2 className="text-green-500" />
+              ) : (
+                <XCircle className="text-red-500" />
+              )}
+            </div>
+            <div className="flex gap-2 py-2">
+              <Button
+                variant={"outline"}
+                disabled={!isAvailable}
+                className=""
+                onClick={async () => {
+                  setEditing(false);
+                  await updateUsername();
+                }}
+              >
+                <Check />
+              </Button>
+              <Button
+                variant={"destructive"}
+                className=""
+                onClick={() => {
+                  setEditing(false);
+                  setValue(username);
+                  setAvailable(true);
                 }}
               >
                 <X />

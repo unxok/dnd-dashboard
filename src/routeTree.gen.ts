@@ -20,10 +20,12 @@ import { Route as DmIndexImport } from './routes/dm/index'
 import { Route as CampaignsIndexImport } from './routes/campaigns/index'
 import { Route as PcCharacterSheetImport } from './routes/pc/character-sheet'
 import { Route as DmBattleImport } from './routes/dm/battle'
-import { Route as CampaignsCampaignIdImport } from './routes/campaigns/$campaignId'
+import { Route as CampaignsCampaignIdImport } from './routes/campaigns.$campaignId'
 import { Route as AuthSignupImport } from './routes/auth/signup'
 import { Route as AuthProfileImport } from './routes/auth/profile'
 import { Route as AuthLoginImport } from './routes/auth/login'
+import { Route as AuthEmailConfirmImport } from './routes/auth/email-confirm'
+import { Route as CampaignsCampaignIdIndexImport } from './routes/campaigns/$campaignId/index'
 
 // Create/Update Routes
 
@@ -92,6 +94,16 @@ const AuthLoginRoute = AuthLoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AuthEmailConfirmRoute = AuthEmailConfirmImport.update({
+  path: '/auth/email-confirm',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CampaignsCampaignIdIndexRoute = CampaignsCampaignIdIndexImport.update({
+  path: '/',
+  getParentRoute: () => CampaignsCampaignIdRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -122,6 +134,13 @@ declare module '@tanstack/react-router' {
       path: '/pc'
       fullPath: '/pc'
       preLoaderRoute: typeof PcImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/email-confirm': {
+      id: '/auth/email-confirm'
+      path: '/auth/email-confirm'
+      fullPath: '/auth/email-confirm'
+      preLoaderRoute: typeof AuthEmailConfirmImport
       parentRoute: typeof rootRoute
     }
     '/auth/login': {
@@ -187,6 +206,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PcIndexImport
       parentRoute: typeof PcImport
     }
+    '/campaigns/$campaignId/': {
+      id: '/campaigns/$campaignId/'
+      path: '/'
+      fullPath: '/campaigns/$campaignId/'
+      preLoaderRoute: typeof CampaignsCampaignIdIndexImport
+      parentRoute: typeof CampaignsCampaignIdImport
+    }
   }
 }
 
@@ -197,10 +223,13 @@ export const routeTree = rootRoute.addChildren({
   AboutRouteRoute,
   DmRoute: DmRoute.addChildren({ DmBattleRoute, DmIndexRoute }),
   PcRoute: PcRoute.addChildren({ PcCharacterSheetRoute, PcIndexRoute }),
+  AuthEmailConfirmRoute,
   AuthLoginRoute,
   AuthProfileRoute,
   AuthSignupRoute,
-  CampaignsCampaignIdRoute,
+  CampaignsCampaignIdRoute: CampaignsCampaignIdRoute.addChildren({
+    CampaignsCampaignIdIndexRoute,
+  }),
   CampaignsIndexRoute,
 })
 
@@ -216,6 +245,7 @@ export const routeTree = rootRoute.addChildren({
         "/about",
         "/dm",
         "/pc",
+        "/auth/email-confirm",
         "/auth/login",
         "/auth/profile",
         "/auth/signup",
@@ -243,6 +273,9 @@ export const routeTree = rootRoute.addChildren({
         "/pc/"
       ]
     },
+    "/auth/email-confirm": {
+      "filePath": "auth/email-confirm.tsx"
+    },
     "/auth/login": {
       "filePath": "auth/login.tsx"
     },
@@ -253,7 +286,10 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "auth/signup.tsx"
     },
     "/campaigns/$campaignId": {
-      "filePath": "campaigns/$campaignId.tsx"
+      "filePath": "campaigns.$campaignId.tsx",
+      "children": [
+        "/campaigns/$campaignId/"
+      ]
     },
     "/dm/battle": {
       "filePath": "dm/battle.tsx",
@@ -273,6 +309,10 @@ export const routeTree = rootRoute.addChildren({
     "/pc/": {
       "filePath": "pc/index.tsx",
       "parent": "/pc"
+    },
+    "/campaigns/$campaignId/": {
+      "filePath": "campaigns/$campaignId/index.tsx",
+      "parent": "/campaigns/$campaignId"
     }
   }
 }
